@@ -27,7 +27,17 @@ No API key. No cloud. No cost.
 **Review covers:** 🐛 Bugs · 🔒 Security · ⚡ Performance · 💡 Suggestions · ✅ Summary
 
 ---
+```
+## Project Structure
+SentinelCodeAI/
+├── main.py              # FastAPI webhook server — signature verification, PR event handling
+├── github_auth.py       # GitHub App JWT generation and installation token exchange
+├── github_client.py     # Fetch PR diffs and post review comments via GitHub API
+├── reviewer.py          # Sends diff to Ollama and returns structured review
+├── .gitignore           # Excludes .env and private-key.pem
+└── SentinelCodeAI_Photo.png  # Demo screenshot
 
+```
 ## Setup
 
 **Requirements:** Python 3.11+ · [Ollama](https://ollama.com) · [ngrok](https://ngrok.com) · GitHub account
