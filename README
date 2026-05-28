@@ -1,6 +1,6 @@
 # 🤖 SentinelCodeAI
 
-A GitHub Bot that automatically reviews every pull request using a **locally hosted LLM** — no OpenAI API key, no cloud dependency, no cost. Every time a PR is opened or updated, SentinelCodeAI fetches the diff, runs it through an AI model, and posts a structured code review comment directly on the PR.
+A GitHub Bot that automatically reviews every pull request using a **locally hosted LLM** — no API key, no cloud, no cost.
 
 ![SentinelCodeAI in action](SentinelCodeAI_Photo.png)
 
@@ -8,40 +8,17 @@ A GitHub Bot that automatically reviews every pull request using a **locally hos
 
 ## How It Works
 
-```
-Developer opens a Pull Request
-        ↓
-GitHub fires a webhook to your server
-        ↓
-Server verifies the signature (security)
-        ↓
-Fetches the PR diff via GitHub API
-        ↓
-Sends diff to local LLM via Ollama
-        ↓
-LLM returns structured review (bugs, security, performance, suggestions)
-        ↓
-Bot posts the review as a comment on the PR
-```
+1. Developer opens a PR → GitHub fires a webhook to your server
+2. Server verifies the signature, fetches the diff via GitHub API
+3. Diff is sent to a local LLM (Ollama) for review
+4. Bot posts a structured comment on the PR automatically
 
----
-
-## Features
-
-- **Fully local** — runs on your machine using Ollama, zero API costs
-- **Automatic** — triggers on every PR open or new commit push
-- **Structured reviews** — always returns Bugs, Security Issues, Performance, Suggestions, and Summary sections
-- **Secure** — verifies GitHub webhook signatures (HMAC-SHA256) to reject fake requests
-- **Fast** — skips empty diffs, handles large diffs with smart truncation
+**Review sections:** 🐛 Bugs & Logic Errors · 🔒 Security Issues · ⚡ Performance · 💡 Suggestions · ✅ Summary
 
 ---
 
 ## Tech Stack
-
-- Python, FastAPI, Uvicorn
-- Ollama (`qwen2.5-coder:7b`)
-- GitHub Apps API (webhooks, JWT authentication, installation tokens)
-- ngrok (for local development tunnel)
+**Python · FastAPI · Ollama (`qwen2.5-coder:7b`) · GitHub Apps API · ngrok**
 
 ---
 
@@ -49,115 +26,82 @@ Bot posts the review as a comment on the PR
 
 ```
 SentinelCodeAI/
-├── main.py           # FastAPI server — receives webhooks, orchestrates the flow
-├── github_auth.py    # JWT + installation token authentication for GitHub App
-├── github_client.py  # Fetches PR diffs and posts review comments
-├── reviewer.py       # Sends diff to Ollama, returns structured LLM review
-├── .env              # Config (App ID, secrets, Ollama URL) — never commit this
-└── private-key.pem   # GitHub App private key — never commit this
+├── main.py           # Webhook server & orchestrator
+├── github_auth.py    # JWT + installation token auth
+├── github_client.py  # Fetch diffs, post comments
+├── reviewer.py       # LLM review logic
+├── .env              # ⚠️ Never commit
+└── private-key.pem   # ⚠️ Never commit
 ```
 
 ---
 
-## Setup & Run It Yourself
+## Setup
 
-### Prerequisites
-- Python 3.11+
-- [Ollama](https://ollama.com) installed
-- [ngrok](https://ngrok.com) account (free)
-- A GitHub account
+**Prerequisites:** Python 3.11+ · [Ollama](https://ollama.com) · [ngrok](https://ngrok.com) · GitHub account
 
-### Step 1 — Clone and install
+**1. Clone & install**
 ```bash
 git clone https://github.com/aminabk99/SentinelCodeAI
 cd SentinelCodeAI
-python -m venv venv
-source venv/Scripts/activate   # Windows
-# source venv/bin/activate     # Mac/Linux
+python -m venv venv && source venv/Scripts/activate
 pip install fastapi uvicorn requests PyJWT cryptography python-dotenv
 ```
 
-### Step 2 — Pull the model
+**2. Pull the model** (~4.7GB)
 ```bash
 ollama pull qwen2.5-coder:7b
 ```
-This is ~4.7GB, give it a few minutes.
 
-### Step 3 — Create a GitHub App
-1. Go to **GitHub → Settings → Developer Settings → GitHub Apps → New GitHub App**
-2. Set name, homepage URL (your GitHub profile)
-3. Set Webhook URL to a placeholder for now (`https://example.com/webhook`)
-4. Set a Webhook Secret (any string, save it)
-5. Permissions: Pull requests (Read & Write), Contents (Read)
-6. Subscribe to: Pull request events
-7. Create the app, note your **App ID**, and download your **Private Key** (.pem file)
-8. Install the app on your test repo
+**3. Create a GitHub App**
+- GitHub → Settings → Developer Settings → GitHub Apps → **New GitHub App**
+- Permissions: Pull requests (Read & Write), Contents (Read)
+- Subscribe to: Pull request events
+- Save your **App ID**, download your **Private Key** (.pem), set a **Webhook Secret**
+- Install the app on your test repo
 
-### Step 4 — Configure .env
-Create a `.env` file in the project root:
-```
+**4. Configure `.env`**
+```env
 GITHUB_APP_ID=your_app_id
 GITHUB_PRIVATE_KEY_PATH=private-key.pem
-GITHUB_WEBHOOK_SECRET=your_webhook_secret
+GITHUB_WEBHOOK_SECRET=your_secret
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=qwen2.5-coder:7b
 ```
-Place your downloaded `.pem` file in the project root and rename it `private-key.pem`.
 
-### Step 5 — Start everything
-Open three terminals:
-
-**Terminal 1 — Ollama (if not already running):**
+**5. Start everything** (3 terminals)
 ```bash
-ollama serve
+ollama serve                          # Terminal 1
+uvicorn main:app --reload --port 8000 # Terminal 2
+ngrok http 8000                       # Terminal 3
 ```
+Update your GitHub App's Webhook URL to `https://your-ngrok-url.ngrok-free.dev/webhook`
 
-**Terminal 2 — Your server:**
-```bash
-uvicorn main:app --reload --port 8000
-```
+**6. Test it**
 
-**Terminal 3 — ngrok tunnel:**
-```bash
-ngrok http 8000
-```
-
-Copy the ngrok HTTPS URL (e.g. `https://abc123.ngrok-free.dev`) and update your GitHub App's Webhook URL to `https://abc123.ngrok-free.dev/webhook`.
-
-### Step 6 — Test it
-1. Go to any repo where the app is installed
-2. Edit any file → commit to a new branch → open a Pull Request
-3. Watch the bot post an AI review comment automatically
-
-Verify your server is reachable at: `https://your-ngrok-url/health` → should return `{"status":"ok"}`
+Open a PR on any repo where the app is installed → bot posts a review automatically.
+Verify at: `https://your-ngrok-url/health` → `{"status":"ok"}`
 
 ---
 
-## What I Found Hardest
+## Hardest Part
+**GitHub App authentication** — Apps use short-lived JWTs signed with an RSA private key, exchanged for installation-scoped tokens. Getting the timing right and debugging a silent 401 from a mismatched webhook secret took the most work.
 
-The trickiest part was **GitHub App authentication**. Unlike a simple personal access token, GitHub Apps use short-lived JWTs signed with an RSA private key, which are then exchanged for installation-scoped tokens. Getting the JWT payload timing right (issued-at offset for clock drift, 10-minute expiry) and understanding the two-step auth flow took the most debugging.
-
-The second hardest part was **webhook signature verification** — the HMAC-SHA256 signature check was failing silently with a 401 because the `.env` file had placeholder values that weren't updated. Adding debug prints to print both the expected and received signatures at every step was what finally cracked it.
-
----
-
-## What I Found Most Interesting
-
-How much a **well-crafted system prompt changes the output quality**. Early versions of the reviewer returned vague, hallucinated feedback. Once the prompt was tightened to say "never hallucinate issues that aren't in the diff" and enforced a strict markdown structure with specific section headers, the reviews became genuinely useful and consistent. The model's behavior is almost entirely shaped by the instructions you give it — that was a real insight into how LLM-powered tools actually work in practice.
+## Most Interesting
+**How much the system prompt shapes output quality.** Tightening the prompt to enforce strict markdown sections and explicitly say "never hallucinate issues not in the diff" turned vague responses into genuinely useful reviews. The model's behavior is almost entirely defined by the instructions you give it.
 
 ---
 
-## Security Notes
-
-- Never commit `.env` or `private-key.pem` — both are in `.gitignore`
-- Webhook signature verification ensures only real GitHub events are processed
-- If your private key or webhook secret is ever exposed, regenerate them immediately in your GitHub App settings
-
----
+## Security
+- `.env` and `private-key.pem` are in `.gitignore` — never commit them
+- All webhook requests verified with HMAC-SHA256 before processing
 
 ## Future Improvements
+- Inline comments on specific changed lines
+- Severity scoring with GitHub status checks (🟢/🟡/🔴)
+- Claude or GPT-4 API support as alternative to local Ollama
+- Deploy to Railway/Render for 24/7 operation
 
-- Inline comments on specific lines (not just a single PR comment)
-- Severity scoring with GitHub status checks (green/yellow/red)
-- Support for Claude or GPT-4 API as an alternative to local Ollama
-- Deploy to Railway or Render so it runs 24/7 without your laptop
+---
+
+*Built by [Amina Bilal](https://github.com/aminabk99)*
