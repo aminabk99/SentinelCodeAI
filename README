@@ -1,28 +1,50 @@
-# 🤖 SentinelCodeAI
+<div align="center">
 
-A GitHub Bot that automatically reviews every pull request using a **locally hosted LLM** — no API key, no cloud, no cost.
+<h1>🤖 SentinelCodeAI</h1>
 
-![SentinelCodeAI in action](SentinelCodeAI_Photo.png)
+<p>A GitHub Bot that automatically reviews every pull request using a <b>locally hosted LLM</b> — no API key, no cloud, no cost.</p>
 
----
+<p>
+  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Ollama-qwen2.5--coder:7b-black?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/GitHub-App-181717?style=for-the-badge&logo=github&logoColor=white"/>
+</p>
 
-## How It Works
-
-1. Developer opens a PR → GitHub fires a webhook to your server
-2. Server verifies the signature, fetches the diff via GitHub API
-3. Diff is sent to a local LLM (Ollama) for review
-4. Bot posts a structured comment on the PR automatically
-
-**Review sections:** 🐛 Bugs & Logic Errors · 🔒 Security Issues · ⚡ Performance · 💡 Suggestions · ✅ Summary
+</div>
 
 ---
 
-## Tech Stack
-**Python · FastAPI · Ollama (`qwen2.5-coder:7b`) · GitHub Apps API · ngrok**
+<h2>Demo</h2>
+
+<div align="center">
+  <img width="800" alt="SentinelCodeAI reviewing a pull request" src="https://raw.githubusercontent.com/aminabk99/SentinelCodeAI/master/SentinelCodeAI_Photo.png"/>
+  <br/>
+  <sub><b>SentinelCodeAI</b> automatically posting a structured AI review comment on a pull request.</sub>
+</div>
 
 ---
 
-## Project Structure
+<h2>How It Works</h2>
+
+<ol>
+  <li>Developer opens a PR → GitHub fires a webhook to your server</li>
+  <li>Server verifies the HMAC-SHA256 signature and fetches the PR diff</li>
+  <li>Diff is sent to a local LLM via Ollama for review</li>
+  <li>Bot posts a structured comment on the PR automatically</li>
+</ol>
+
+<b>Review sections:</b> 🐛 Bugs & Logic Errors · 🔒 Security Issues · ⚡ Performance · 💡 Suggestions · ✅ Summary
+
+---
+
+<h2>Tech Stack</h2>
+
+<b>Python · FastAPI · Uvicorn · Ollama (qwen2.5-coder:7b) · GitHub Apps API · JWT Authentication · ngrok</b>
+
+---
+
+<h2>Project Structure</h2>
 
 ```
 SentinelCodeAI/
@@ -36,11 +58,14 @@ SentinelCodeAI/
 
 ---
 
-## Setup
+<h2>Setup</h2>
 
-**Prerequisites:** Python 3.11+ · [Ollama](https://ollama.com) · [ngrok](https://ngrok.com) · GitHub account
+<b>Prerequisites:</b> Python 3.11+ · <a href="https://ollama.com">Ollama</a> · <a href="https://ngrok.com">ngrok</a> · GitHub account
 
-**1. Clone & install**
+<br/><br/>
+
+<b>1. Clone & install</b>
+
 ```bash
 git clone https://github.com/aminabk99/SentinelCodeAI
 cd SentinelCodeAI
@@ -48,19 +73,23 @@ python -m venv venv && source venv/Scripts/activate
 pip install fastapi uvicorn requests PyJWT cryptography python-dotenv
 ```
 
-**2. Pull the model** (~4.7GB)
+<b>2. Pull the model</b> (~4.7GB)
+
 ```bash
 ollama pull qwen2.5-coder:7b
 ```
 
-**3. Create a GitHub App**
-- GitHub → Settings → Developer Settings → GitHub Apps → **New GitHub App**
-- Permissions: Pull requests (Read & Write), Contents (Read)
-- Subscribe to: Pull request events
-- Save your **App ID**, download your **Private Key** (.pem), set a **Webhook Secret**
-- Install the app on your test repo
+<b>3. Create a GitHub App</b>
+<ul>
+  <li>GitHub → Settings → Developer Settings → GitHub Apps → <b>New GitHub App</b></li>
+  <li>Permissions: Pull requests (Read & Write), Contents (Read)</li>
+  <li>Subscribe to: Pull request events</li>
+  <li>Save your <b>App ID</b>, download your <b>Private Key</b> (.pem), set a <b>Webhook Secret</b></li>
+  <li>Install the app on your test repo</li>
+</ul>
 
-**4. Configure `.env`**
+<b>4. Configure `.env`</b>
+
 ```env
 GITHUB_APP_ID=your_app_id
 GITHUB_PRIVATE_KEY_PATH=private-key.pem
@@ -69,39 +98,57 @@ OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=qwen2.5-coder:7b
 ```
 
-**5. Start everything** (3 terminals)
+<b>5. Start everything</b> (3 terminals)
+
 ```bash
-ollama serve                          # Terminal 1
-uvicorn main:app --reload --port 8000 # Terminal 2
-ngrok http 8000                       # Terminal 3
+ollama serve                           # Terminal 1
+uvicorn main:app --reload --port 8000  # Terminal 2
+ngrok http 8000                        # Terminal 3
 ```
+
 Update your GitHub App's Webhook URL to `https://your-ngrok-url.ngrok-free.dev/webhook`
 
-**6. Test it**
+<b>6. Test it</b>
 
-Open a PR on any repo where the app is installed → bot posts a review automatically.
+Open a PR on any repo where the app is installed → the bot posts a review automatically.
+<br/>
 Verify at: `https://your-ngrok-url/health` → `{"status":"ok"}`
 
 ---
 
-## Hardest Part
-**GitHub App authentication** — Apps use short-lived JWTs signed with an RSA private key, exchanged for installation-scoped tokens. Getting the timing right and debugging a silent 401 from a mismatched webhook secret took the most work.
+<h2>Hardest Part</h2>
 
-## Most Interesting
-**How much the system prompt shapes output quality.** Tightening the prompt to enforce strict markdown sections and explicitly say "never hallucinate issues not in the diff" turned vague responses into genuinely useful reviews. The model's behavior is almost entirely defined by the instructions you give it.
+<b>GitHub App authentication</b> — Apps use short-lived JWTs signed with an RSA private key, exchanged for installation-scoped tokens. Getting the timing right and debugging a silent 401 from a mismatched webhook secret took the most work.
 
 ---
 
-## Security
-- `.env` and `private-key.pem` are in `.gitignore` — never commit them
-- All webhook requests verified with HMAC-SHA256 before processing
+<h2>Most Interesting</h2>
 
-## Future Improvements
-- Inline comments on specific changed lines
-- Severity scoring with GitHub status checks (🟢/🟡/🔴)
-- Claude or GPT-4 API support as alternative to local Ollama
-- Deploy to Railway/Render for 24/7 operation
+<b>How much the system prompt shapes output quality.</b> Tightening the prompt to enforce strict markdown sections and explicitly say "never hallucinate issues not in the diff" turned vague responses into genuinely useful reviews. The model's behavior is almost entirely defined by the instructions you give it.
 
 ---
 
-*Built by [Amina Bilal](https://github.com/aminabk99)*
+<h2>Security</h2>
+
+<ul>
+  <li><code>.env</code> and <code>private-key.pem</code> are in <code>.gitignore</code> — never commit them</li>
+  <li>All webhook requests verified with HMAC-SHA256 before processing</li>
+  <li>If your private key or secret is ever exposed, regenerate immediately in GitHub App settings</li>
+</ul>
+
+---
+
+<h2>Future Improvements</h2>
+
+<ul>
+  <li>Inline comments on specific changed lines</li>
+  <li>Severity scoring with GitHub status checks (🟢 / 🟡 / 🔴)</li>
+  <li>Claude or GPT-4 API support as alternative to local Ollama</li>
+  <li>Deploy to Railway/Render for 24/7 operation</li>
+</ul>
+
+---
+
+<div align="center">
+  <sub>Built by <a href="https://github.com/aminabk99">Amina Bilal</a> · <a href="https://linkedin.com/in/amina-bilal-926340382">LinkedIn</a></sub>
+</div>
