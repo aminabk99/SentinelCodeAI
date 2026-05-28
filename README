@@ -1,94 +1,191 @@
+````markdown
 <div align="center">
 
-<h1>🤖 SentinelCodeAI</h1>
+# 🤖 SentinelCodeAI
 
-<p>A GitHub Bot that automatically reviews every pull request using a <b>locally hosted LLM</b> — no API key, no cloud, no cost.</p>
+### AI-Powered GitHub Pull Request Reviews — Fully Local
 
-<p>
-  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white"/>
-  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white"/>
-  <img src="https://img.shields.io/badge/Ollama-qwen2.5--coder:7b-black?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/GitHub-App-181717?style=for-the-badge&logo=github&logoColor=white"/>
-</p>
+A GitHub App that automatically reviews pull requests using a **locally hosted LLM** through Ollama.  
+No OpenAI API key. No cloud dependency. No subscription cost.
+
+---
+
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Ollama](https://img.shields.io/badge/Ollama-qwen2.5--coder:7b-black?style=for-the-badge)
+![GitHub](https://img.shields.io/badge/GitHub-App-181717?style=for-the-badge&logo=github&logoColor=white)
 
 </div>
 
 ---
 
-<h2>Demo</h2>
+# ✨ Features
 
-<div align="center">
-  <img width="800" alt="SentinelCodeAI reviewing a pull request" src="https://raw.githubusercontent.com/aminabk99/SentinelCodeAI/master/SentinelCodeAI_Photo.png"/>
-  <br/>
-  <sub><b>SentinelCodeAI</b> automatically posting a structured AI review comment on a pull request.</sub>
-</div>
-
----
-
-<h2>How It Works</h2>
-
-<ol>
-  <li>Developer opens a PR → GitHub fires a webhook to your server</li>
-  <li>Server verifies the HMAC-SHA256 signature and fetches the PR diff</li>
-  <li>Diff is sent to a local LLM via Ollama for review</li>
-  <li>Bot posts a structured comment on the PR automatically</li>
-</ol>
-
-<b>Review sections:</b> 🐛 Bugs & Logic Errors · 🔒 Security Issues · ⚡ Performance · 💡 Suggestions · ✅ Summary
+- 🔍 Automatically reviews every pull request
+- 🧠 Uses a local LLM through Ollama
+- 🔒 Verifies GitHub webhook signatures with HMAC-SHA256
+- 💬 Posts structured AI review comments directly on PRs
+- ⚡ No external AI API required
+- 🛠 Lightweight FastAPI backend
 
 ---
 
-<h2>Tech Stack</h2>
+# ⚙️ How It Works
 
-<b>Python · FastAPI · Uvicorn · Ollama (qwen2.5-coder:7b) · GitHub Apps API · JWT Authentication · ngrok</b>
+1. A developer opens or updates a pull request
+2. GitHub sends a webhook event to the FastAPI server
+3. The server verifies the webhook signature
+4. The PR diff is fetched from GitHub
+5. The diff is analyzed by a local LLM through Ollama
+6. SentinelCodeAI posts an automated review comment
 
 ---
 
-<h2>Project Structure</h2>
+# 🧠 Review Categories
 
-```
+SentinelCodeAI analyzes pull requests for:
+
+- 🐛 Bugs & Logic Errors
+- 🔒 Security Issues
+- ⚡ Performance Problems
+- 💡 Improvement Suggestions
+- ✅ Overall Summary
+
+---
+
+# 🛠 Tech Stack
+
+| Technology | Purpose |
+|---|---|
+| Python | Core backend |
+| FastAPI | Webhook API server |
+| Uvicorn | ASGI server |
+| Ollama | Local LLM hosting |
+| qwen2.5-coder:7b | Code review model |
+| GitHub Apps API | GitHub integration |
+| JWT Authentication | Secure app authentication |
+| ngrok | Local webhook tunneling |
+
+---
+
+# 📁 Project Structure
+
+```txt
 SentinelCodeAI/
-├── main.py           # Webhook server & orchestrator
-├── github_auth.py    # JWT + installation token auth
-├── github_client.py  # Fetch diffs, post comments
-├── reviewer.py       # LLM review logic
-├── .env              # ⚠️ Never commit
-└── private-key.pem   # ⚠️ Never commit
-```
+├── main.py
+├── github_auth.py
+├── github_client.py
+├── reviewer.py
+├── .env
+└── private-key.pem
+````
+
+### File Overview
+
+| File               | Description                             |
+| ------------------ | --------------------------------------- |
+| `main.py`          | FastAPI webhook server                  |
+| `github_auth.py`   | JWT + installation token authentication |
+| `github_client.py` | GitHub API communication                |
+| `reviewer.py`      | LLM review generation logic             |
+| `.env`             | Environment variables                   |
+| `private-key.pem`  | GitHub App private key                  |
 
 ---
 
-<h2>Setup</h2>
+# 🚀 Setup
 
-<b>Prerequisites:</b> Python 3.11+ · <a href="https://ollama.com">Ollama</a> · <a href="https://ngrok.com">ngrok</a> · GitHub account
-
-<br/><br/>
-
-<b>1. Clone & install</b>
+## 1. Clone the Repository
 
 ```bash
 git clone https://github.com/aminabk99/SentinelCodeAI
 cd SentinelCodeAI
-python -m venv venv && source venv/Scripts/activate
+```
+
+---
+
+## 2. Create a Virtual Environment
+
+### Windows
+
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+### macOS / Linux
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+---
+
+## 3. Install Dependencies
+
+```bash
 pip install fastapi uvicorn requests PyJWT cryptography python-dotenv
 ```
 
-<b>2. Pull the model</b> (~4.7GB)
+---
+
+## 4. Install Ollama
+
+Download Ollama:
+
+https://ollama.com
+
+Then pull the model:
 
 ```bash
 ollama pull qwen2.5-coder:7b
 ```
 
-<b>3. Create a GitHub App</b>
-<ul>
-  <li>GitHub → Settings → Developer Settings → GitHub Apps → <b>New GitHub App</b></li>
-  <li>Permissions: Pull requests (Read & Write), Contents (Read)</li>
-  <li>Subscribe to: Pull request events</li>
-  <li>Save your <b>App ID</b>, download your <b>Private Key</b> (.pem), set a <b>Webhook Secret</b></li>
-  <li>Install the app on your test repo</li>
-</ul>
+---
 
-<b>4. Configure `.env`</b>
+# 🔑 GitHub App Setup
+
+Go to:
+
+GitHub → Settings → Developer Settings → GitHub Apps → **New GitHub App**
+
+---
+
+## Required Permissions
+
+### Repository Permissions
+
+| Permission    | Access       |
+| ------------- | ------------ |
+| Pull Requests | Read & Write |
+| Contents      | Read-only    |
+
+---
+
+## Subscribe to Events
+
+Enable:
+
+* Pull request events
+
+---
+
+## Save These Values
+
+You will need:
+
+* GitHub App ID
+* Webhook Secret
+* Private Key (`.pem` file)
+
+Then install the app on your repository.
+
+---
+
+# 🧾 Environment Variables
+
+Create a `.env` file:
 
 ```env
 GITHUB_APP_ID=your_app_id
@@ -98,57 +195,141 @@ OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=qwen2.5-coder:7b
 ```
 
-<b>5. Start everything</b> (3 terminals)
+---
+
+# ▶️ Running the Project
+
+Open **3 terminals**.
+
+---
+
+## Terminal 1 — Start Ollama
 
 ```bash
-ollama serve                           # Terminal 1
-uvicorn main:app --reload --port 8000  # Terminal 2
-ngrok http 8000                        # Terminal 3
+ollama serve
 ```
 
-Update your GitHub App's Webhook URL to `https://your-ngrok-url.ngrok-free.dev/webhook`
+---
 
-<b>6. Test it</b>
+## Terminal 2 — Start FastAPI
 
-Open a PR on any repo where the app is installed → the bot posts a review automatically.
-<br/>
-Verify at: `https://your-ngrok-url/health` → `{"status":"ok"}`
+```bash
+uvicorn main:app --reload --port 8000
+```
 
 ---
 
-<h2>Hardest Part</h2>
+## Terminal 3 — Start ngrok
 
-<b>GitHub App authentication</b> — Apps use short-lived JWTs signed with an RSA private key, exchanged for installation-scoped tokens. Getting the timing right and debugging a silent 401 from a mismatched webhook secret took the most work.
+```bash
+ngrok http 8000
+```
 
----
+Copy your ngrok forwarding URL and update your GitHub App webhook:
 
-<h2>Most Interesting</h2>
-
-<b>How much the system prompt shapes output quality.</b> Tightening the prompt to enforce strict markdown sections and explicitly say "never hallucinate issues not in the diff" turned vague responses into genuinely useful reviews. The model's behavior is almost entirely defined by the instructions you give it.
-
----
-
-<h2>Security</h2>
-
-<ul>
-  <li><code>.env</code> and <code>private-key.pem</code> are in <code>.gitignore</code> — never commit them</li>
-  <li>All webhook requests verified with HMAC-SHA256 before processing</li>
-  <li>If your private key or secret is ever exposed, regenerate immediately in GitHub App settings</li>
-</ul>
+```txt
+https://your-ngrok-url.ngrok-free.dev/webhook
+```
 
 ---
 
-<h2>Future Improvements</h2>
+# 🧪 Testing
 
-<ul>
-  <li>Inline comments on specific changed lines</li>
-  <li>Severity scoring with GitHub status checks (🟢 / 🟡 / 🔴)</li>
-  <li>Claude or GPT-4 API support as alternative to local Ollama</li>
-  <li>Deploy to Railway/Render for 24/7 operation</li>
-</ul>
+Open a pull request on any repository where the app is installed.
+
+SentinelCodeAI should automatically post a review comment.
+
+---
+
+## Health Check
+
+Visit:
+
+```txt
+https://your-ngrok-url.ngrok-free.dev/health
+```
+
+Expected response:
+
+```json
+{"status":"ok"}
+```
+
+---
+
+# 🔒 Security
+
+* `.env` and `private-key.pem` should NEVER be committed
+* All webhook requests are verified using HMAC-SHA256
+* GitHub App authentication uses short-lived JWTs
+* Installation tokens are scoped to individual repositories
+
+---
+
+# 🧩 Hardest Part
+
+The most difficult part of the project was implementing GitHub App authentication correctly.
+
+GitHub Apps require:
+
+* JWT generation using RSA private keys
+* Exchanging JWTs for installation tokens
+* Proper webhook verification
+* Accurate timing and expiration handling
+
+Debugging failed authentication and silent `401 Unauthorized` responses required extensive testing.
+
+---
+
+# 💡 Most Interesting Part
+
+The most interesting discovery was how strongly prompt engineering affects model quality.
+
+Small prompt changes dramatically improved:
+
+* formatting consistency
+* issue accuracy
+* hallucination reduction
+* review usefulness
+
+Explicit instructions like:
+
+> “Never hallucinate issues not present in the diff”
+
+significantly improved review reliability.
+
+---
+
+# 🚧 Future Improvements
+
+* Inline comments on changed lines
+* Severity scoring system
+* GitHub status checks integration
+* Support for Claude or GPT APIs
+* Docker containerization
+* Cloud deployment support
+* Multi-model configuration
+
+---
+
+# 📌 Notes
+
+This project is intended for:
+
+* learning GitHub App development
+* experimenting with local LLM workflows
+* understanding webhook architecture
+* exploring automated code review systems
 
 ---
 
 <div align="center">
-  <sub>Built by <a href="https://github.com/aminabk99">Amina Bilal</a> · <a href="https://linkedin.com/in/amina-bilal-926340382">LinkedIn</a></sub>
+
+### Built by Amina Bilal
+
+GitHub: https://github.com/aminabk99
+
+LinkedIn: https://linkedin.com/in/amina-bilal-926340382
+
 </div>
+```
